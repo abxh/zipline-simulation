@@ -1,0 +1,23 @@
+black
+purple
+red
+orange
+yellow
+green
+dark green
+teal
+dark blue
+blue
+light blue
+cyan
+white
+light gray
+gray
+dark gray
+
+# This file is used to map color names with the colors in the hex file,
+# which is downloaded from https://lospec.com/palette-list/sweetie-16.
+
+# Note: 
+#   The line number is used for the mapping of the values.
+#   The names in each line must correspond to the the colors in the hex file.
