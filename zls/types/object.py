@@ -2,6 +2,7 @@
 from pygame import Surface
 from pygame.event import Event
 
+
 class Object():
     def __init__(self, name):
         self.name = name
@@ -13,5 +14,5 @@ class Object():
     def update(self, dt: int, events: list[Event]):
         pass
     
-    def draw(self, surface: Surface):
+    def draw(self, surface: Surface, scale_y: float):
         pass

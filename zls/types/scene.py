@@ -3,6 +3,7 @@ import pygame as pg
 from pygame import Surface
 from pygame.event import Event
 
+
 class Scene():
     def __init__(self, name):
         self.name = name
@@ -24,6 +25,6 @@ class Scene():
         for name, object in self.object_dict.items():
             object.update(dt, events)
     
-    def draw(self, surface: Surface):
+    def draw(self, surface: Surface, scale_y: float):
         for name, object in self.object_dict.items():
-            object.draw(surface)
+            object.draw(surface, scale_y)
