@@ -1,6 +1,11 @@
-from submodules.window import Window
+import sys
 
+import pygame as pg
+
+from core.simulation import Simulation
 
 if __name__ == "__main__":
-    w = Window()
-    w.start()
+    pg.init()
+    Simulation().run()
+    pg.quit()
+    sys.exit()
