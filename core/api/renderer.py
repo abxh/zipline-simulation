@@ -1,4 +1,5 @@
 from functools import partial
+from typing import Callable
 
 import numpy as np
 import pygame as pg
@@ -14,42 +15,45 @@ class Renderer(metaclass=SingletonType):
 
     Attributes
     ----------
-        bg_color : Color
-            The color of the drawable surface.
+        draw_rect : Rect
+            The part of the screen where things are drawn.
+        inner_color : Color
+            The color of the part of the screen to be drawn upon.
         layer_count : int
-            The number of layers that are drawable.
-        surface : Surface
-            The drawable surface of the screen.
-        surface_size : NDArray
-            The size of the drawable surface.
-        surface_pos : NDArray
-            The position of the drawable surface.
-        surface_rect : Rect
-            The pygame rect of the drawable surface.
+            The numbers of layers to draw.
+        outer_color : Color
+            The color of the part of the screen to be not be drawn upon.
+        surface_h_scale : float
+            The ratio between the screen current and original height.
     """
 
     def __init__(self):
         """
         Initialize the renderer.
         """
-        self.bg_color = pg.Color(225, 225, 225)
-        self._layers = [[], [], []]
+        self.outer_color = pg.Color(0, 0, 0)
+        self.inner_color = pg.Color(225, 225, 225)
+        self.layer_count = 3
+        self._layers = [[] for _ in range(self.layer_count)]
 
         # Resize related things:
-        self._ratio = self._screen_size[0] / self._screen_size[1]
-        self.surface = pg.Surface(self._screen_size)
-        self.surface_pos = np.array([0, 0])
+        self._ratio = self.screen_size[0] / self.screen_size[1]
+        self._org_h = self.screen_size[1]
+        self.surface_h_scale = 1.00
+
+        self.draw_rect = pg.Rect((0, 0), self.screen_size)
 
         def on_resize(renderer):
             win_size = pg.display.get_window_size()
             new_size = (renderer._ratio * win_size[1], win_size[1])
+            new_pos = ((win_size[0] - new_size[0]) / 2, 0)
 
-            renderer.surface = pg.Surface(new_size)
-            renderer.surface_pos = np.array([(win_size[0] - new_size[0]) / 2, 0])
+            renderer.draw_rect = pg.Rect(new_pos, new_size)
+            renderer.surface_h_scale = win_size[1] / renderer._org_h
 
         def while_resize(renderer):
             on_resize(renderer)
-            renderer._update()
+            renderer._update(entire_screen=True)
 
         if Win32Methods.get_supported():
             Win32Methods._call_while_resize(partial(while_resize, self))
@@ -57,31 +61,30 @@ class Renderer(metaclass=SingletonType):
             handler = event_handler(type=pg.VIDEORESIZE)(on_resize)
             EventManager().add_handler(handler, renderer=self)
 
-    def _update(self):
-        self.surface.fill(self.bg_color)
-        self._screen.blit(self.surface, self.surface_pos)
+    def _update(self, entire_screen=False):
+        self.screen.fill(self.inner_color, self.draw_rect)
+
         for layer in self._layers:
             for draw_callback in layer:
                 draw_callback()
-        pg.display.flip()
-        self._layers = [[], [], []]
+
+        if entire_screen:
+            pg.display.flip()
+        else:
+            pg.display.update(self.draw_rect)
+
+        self._layers = [[] for _ in range(self.layer_count)]
+
+    def blit(self, layer_id, surface, pos):
+        def blit_callback(renderer):
+            renderer.screen.blit(surface, pos)
+
+        self._layers[layer_id].append(partial(blit_callback, self))
 
     @property
-    def layer_count(self):
-        return len(self._layers)
-
-    @property
-    def surface_size(self):
-        return np.array(self.surface.get_size())
-
-    @property
-    def surface_rect(self):
-        return self.surface.get_rect(topleft=self.surface_pos)
-
-    @property
-    def _screen(self):
+    def screen(self):
         return pg.display.get_surface()
 
     @property
-    def _screen_size(self):
+    def screen_size(self):
         return np.array(pg.display.get_window_size())

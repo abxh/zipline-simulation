@@ -13,7 +13,7 @@ class State:
         for object in self.get_objects():
             object.start()
 
-    def update(self, dt: int):
+    def update(self, dt: float):
         for object in self.get_objects():
             object.update(dt)
 

@@ -14,7 +14,6 @@ class Simulation(WindowExtended):
 
         super().__init__(title, icon, size, flags, max_fps)
 
-        assets.fonts.scale_on_resize()
         assets.images.reconvert_on_resize()
 
         if Win32Methods.get_supported():
@@ -35,6 +34,7 @@ class Simulation(WindowExtended):
             if prev_name is not None:
                 self._states[prev_name].end()
             self._states[next_name].start()
+            self._prev_state_name = next_name
 
         self._states[next_name].update(self.dt)
         self._states[next_name].draw(self.renderer)

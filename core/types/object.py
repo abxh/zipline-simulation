@@ -8,7 +8,7 @@ class Object:
     def start(self):
         pass
 
-    def update(self, dt: int):
+    def update(self, dt: float):
         pass
 
     def draw(self, renderer: Renderer):
