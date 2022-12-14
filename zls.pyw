@@ -12,15 +12,20 @@ It has following dependencies:
  - pandas 1.5.2
  - matplotlib 3.6.2
 """
-
+import os
 import sys
 
 import pygame as pg
 
 from core.simulation import Simulation
 
+# https://stackoverflow.com/questions/28033003/pyinstaller-with-pygame
+if getattr(sys, 'frozen', False):
+    os.chdir(sys._MEIPASS)
+
 if __name__ == "__main__":
     pg.init()
     Simulation().run()
     pg.quit()
     sys.exit()
+    

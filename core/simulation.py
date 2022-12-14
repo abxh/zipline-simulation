@@ -16,7 +16,7 @@ class Simulation(WindowExtended):
 
         assets.images.reconvert_on_resize()
 
-        if Win32Methods.get_supported():
+        if Win32Methods.supported:
             Win32Methods.maximize()
 
         self._states = states.get_states_dict()

@@ -1,5 +1,6 @@
 *.todo
 temp
+.build
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

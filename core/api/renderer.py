@@ -1,12 +1,10 @@
 from functools import partial
-from typing import Callable
 
 import numpy as np
 import pygame as pg
 
 from core.api._singletontype import SingletonType
 from core.api.eventmanager import EventManager, event_handler
-from core.api.win32methods import Win32Methods
 
 
 class Renderer(metaclass=SingletonType):
@@ -47,31 +45,27 @@ class Renderer(metaclass=SingletonType):
             win_size = pg.display.get_window_size()
             new_size = (renderer._ratio * win_size[1], win_size[1])
             new_pos = ((win_size[0] - new_size[0]) / 2, 0)
+            new_rect = pg.Rect(new_pos, new_size)
+            new_scale = win_size[1] / renderer._org_h
+            left_outer_area = ((0, 0), new_rect.bottomleft)
+            right_outer_area = (new_rect.topright, win_size)
 
-            renderer.draw_rect = pg.Rect(new_pos, new_size)
-            renderer.surface_h_scale = win_size[1] / renderer._org_h
+            renderer.draw_rect = new_rect
+            renderer.surface_h_scale = new_scale
 
-        def while_resize(renderer):
-            on_resize(renderer)
-            renderer._update(entire_screen=True)
+            pg.display.update((left_outer_area, right_outer_area))
 
-        if Win32Methods.get_supported():
-            Win32Methods._call_while_resize(partial(while_resize, self))
-        else:
-            handler = event_handler(type=pg.VIDEORESIZE)(on_resize)
-            EventManager().add_handler(handler, renderer=self)
+        handler = event_handler(type=pg.VIDEORESIZE)(on_resize)
+        EventManager().add_handler(handler, renderer=self)
 
-    def _update(self, entire_screen=False):
+    def _update(self):
         self.screen.fill(self.inner_color, self.draw_rect)
 
         for layer in self._layers:
             for draw_callback in layer:
                 draw_callback()
 
-        if entire_screen:
-            pg.display.flip()
-        else:
-            pg.display.update(self.draw_rect)
+        pg.display.update(self.draw_rect)
 
         self._layers = [[] for _ in range(self.layer_count)]
 
