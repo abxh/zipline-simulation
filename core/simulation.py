@@ -38,3 +38,7 @@ class Simulation(WindowExtended):
 
         self._states[next_name].update(self.dt)
         self._states[next_name].draw(self.renderer)
+
+    @property
+    def current_state(self):
+        return self._states[self.next_state_name]

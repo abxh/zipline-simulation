@@ -18,7 +18,7 @@ class _PartialFont:
         self.path = path
 
     def of_size(self, size):
-        return _load_font(self.path, round(size * _Renderer().surface_h_scale))
+        return _load_font(self.path, round(size * _Renderer()._h_scale))
 
 
 gui_regular = _PartialFont("assets\\fonts\\ClearSans Regular.ttf")

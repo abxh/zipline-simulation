@@ -1,5 +1,5 @@
+import functools
 import os
-from functools import lru_cache
 
 import pygame as pg
 import win32con as w32c
@@ -8,15 +8,20 @@ import win32gui as w32g
 
 class Win32Methods:
     """
-    This class contains static methods used to control the window using the
-    Win32 API to extend the pygame window's functionality.
+    This class uses Win32 API to extend the pygame window's functionality.
     """
 
     supported = os.name == "nt"
 
     @staticmethod
-    @lru_cache
+    @functools.lru_cache
     def get_hwnd():
+        """
+        Returns
+        -------
+            bool
+                The hardware handle of the window to be used by the Win32 API.
+        """
         return pg.display.get_wm_info()["window"]
 
     @classmethod
@@ -60,7 +65,7 @@ class Win32Methods:
     @classmethod
     def restore_state(cls):
         """
-        Restore the state of the window from being minimized or maximized.
+        Restore the state of the window after it was maximized or minimized.
         """
         hWnd = cls.get_hwnd()
         w32g.ShowWindow(hWnd, w32c.SW_RESTORE)

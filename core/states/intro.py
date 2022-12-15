@@ -7,9 +7,9 @@ from core.types import State
 class IntroState(State):
     def __init__(self):
         name = "intro"
+        Renderer().bg_color = assets.colors.white
         super().__init__(name)
-        Renderer().inner_color = assets.colors.white
 
     def start(self):
         self.set_objects([IntroText()])
-        return super().start()
+        super().start()

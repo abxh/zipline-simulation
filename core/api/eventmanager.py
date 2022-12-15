@@ -44,13 +44,48 @@ def event_handler(type: int, pass_event=False):
 
 class EventManager(metaclass=SingletonType):
     """
-    This class manages events.
+    This class provides a centralised way of managing pygame events.
+
+    Additionally, as a singleton class, it can be invoked anywhere in the code to
+    create event handlers.
+
+    Attributes
+    ----------
+        events : list[pygame.event.Event]
+            The events pumped from pygame in the current iteration.
     """
 
-    def __init__(self) -> None:
+    def __init__(self, window) -> None:
+        self._window = window
         self._handlers: dict[str, Callable] = {}
         self._id_count = count()
         self._id_to_remove: deque[int] = deque()
+        self.events: list[pg.event.Event] = []
+
+    def add_new_handler(self, func, type, pass_event=False, **kwargs):
+        """
+        Convert a function to a handler and add it.
+
+        Parameters
+        ----------
+            func : Callable
+                The function to be decorated by `event_handler`.
+            type : int
+                The pygame event type for the function to listen to.
+            pass_event : bool, default False
+                Whether to pass the event to the function, when the event it
+                was listening to is found, as the function's first parameter.
+
+        Additional keyword-arguments can be passed, which will be passed to the
+        function.
+
+        Returns
+        -------
+            int
+                The id of the event handler, which can be used to remove it.
+        """
+        handler = event_handler(type, pass_event)(func)
+        return self.add_handler(handler, **kwargs)
 
     def add_handler(self, handlers, **kwargs):
         """
@@ -90,15 +125,20 @@ class EventManager(metaclass=SingletonType):
         """
         Update the event manager.
         """
-        # Create a collection of clones of the handlers.
+        self.events = pg.event.get()
+
+        # Create a clone of the collection of handlers.
         handlers = self._handlers.values()
 
-        for event in pg.event.get():
+        for event in self.events:
             # Filter handlers that return True i.e. they have found the event
             # they were listening to.
             handlers = [handler for handler in handlers if not handler(event)]
 
-        if self._id_to_remove:  # If not empty.
+        # Check if queue is not empty.
+        if self._id_to_remove:
             # Remove any events to be removed.
             for id in self._id_to_remove:
+                # by iterating through the queue, the elements in the queue are
+                # also removed.
                 del self._handlers[id]

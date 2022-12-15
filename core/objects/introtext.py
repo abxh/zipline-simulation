@@ -14,8 +14,7 @@ class IntroText(Object):
         self.time_elapsed += dt
 
         if self.time_elapsed > 6:
-            self.time_elapsed = 0
-            # s.Simulation().next_state_name = "visual"
+            s.Simulation().next_state_name = "visual"
 
     def draw(self, renderer: Renderer):
         renderer = Renderer()
@@ -80,19 +79,19 @@ class IntroText(Object):
 
         self.draw_text_general(renderer, alpha_val, text, size, offset)
 
-    def draw_text_general(self, renderer, alpha_val, text, size, offset):
+    def draw_text_general(self, renderer: Renderer, alpha_val, text, size, offset):
         antialiased = True
         color = assets.colors.black
 
         font = assets.fonts.gui_regular.of_size(size).render(text, antialiased, color)
 
         if offset >= 0:
-            pos = font.get_rect(midbottom=renderer.draw_rect.center)
+            pos = font.get_rect(midbottom=renderer.drect.center)
         elif offset <= 0:
-            pos = font.get_rect(midtop=renderer.draw_rect.center)
+            pos = font.get_rect(midtop=renderer.drect.center)
 
-        pos = (pos.topleft[0], pos.topleft[1] - offset)
+        pos = (pos.topleft[0], pos.topleft[1] - offset * renderer._h_scale)
 
         font.set_alpha(alpha_val)
 
-        renderer.blit(1, font, pos)
+        renderer.draw_surface(0, font, pos)

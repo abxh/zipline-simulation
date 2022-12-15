@@ -3,7 +3,7 @@ class SingletonType(type):
     This class is used to generate singleton typed classes.
     """
 
-    _instances = {}
+    _instances: dict[str, object] = {}
 
     def __call__(cls, *args, **kwargs):
         """

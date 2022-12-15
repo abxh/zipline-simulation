@@ -1,5 +1,4 @@
 import pygame as pg
-from pygame.time import Clock
 
 from core.api.eventmanager import EventManager, event_handler
 from core.api.renderer import Renderer
@@ -8,30 +7,57 @@ from core.api.window import Window
 
 class WindowExtended(Window):
     """
-    This class extends the Window class with functionality for the 'main loop'.
+    This class extends the `Window` class with functionality for the main loop.
+
+    Additionally, as a singleton class, it can be invoked and be accessed such so
+    the same instance is returned whenever it's constructor is called. Also it's
+    constructor is only called once.
 
     Attributes
     ----------
         dt : float
             The time between iterations of the main loop in seconds.
+
         eventmanager : EventManager
             The window's event manager responsible for handling events.
-        flags : int
-            The pygame flag to start the window with.
+
         fps : int
-            The number of iterations of the main loop being run each second.
-        icon : Surface
-            The pygame surface used as the window's icon.
+            An integer describing the number of iterations the main loop is being
+            run each second. In turn describes the number of frames being rendered
+            each second.
+
+        flags : int
+            An integer describing the display type(s). Multiple types can be
+            combined using the bitwise operator `|`. A list of relevant types
+            are as following (from the documentation):
+
+        - pygame.FULLSCREEN     create a fullscreen display
+        - pygame.RESIZABLE      display window should be sizeable
+        - pygame.NOFRAME        display window will have no border or controls
+        - pygame.SCALED         resolution depends on desktop size and scale graphics
+        - pygame.SHOWN          window is opened in visible mode (default)
+        - pygame.HIDDEN         window is opened in hidden mode
+
+        icon : pygame.Surface
+            The pygame Surface object used as the window's icon.
+
         max_fps : int
             The maximum number of iterations each second to keep the main loop around.
+            In turn controls how many frames, the renderer will render each second.
+
         renderer : Renderer
-            The window's renderer responsible for drawing stuff to the screen.
+            The window's renderer responsible for managing drawing tasks.
+
         running : bool
-            Whether the main loop is running.
-        size : ArrayLike
-            The size of the window.
+            A boolean describing whether the main loop is running. Can be set
+            to false to exit the main loop. Otherwise the `exit` method can be
+            used for the same purpose.
+
+        size : numpy.typing.ArrayLike
+            An integer array of size 2 describing the size of the window.
+
         title : str
-            The title or caption of the window.
+            A string describing the title of the window.
     """
 
     def __init__(
@@ -48,21 +74,33 @@ class WindowExtended(Window):
         Parameters
         ----------
             title : str
-                The title or caption of the window.
-            icon : Surface
-                The pygame surface used as the window's icon.
-            size : ArrayLike
-                The size of the window.
+                The title of the window.
             flags : int
-                The pygame flag to start the window with.
+                The display type(s). Multiple types can be combined using the
+                bitwise operator `|`. A list of relevant types are as following
+                (from the documentation):
+
+            - pygame.FULLSCREEN    create a fullscreen display
+            - pygame.RESIZABLE     display window should be sizeable
+            - pygame.NOFRAME       display window will have no border or controls
+            - pygame.SCALED        resolution depends on desktop size and scale graphics
+            - pygame.SHOWN         window is opened in visible mode (default)
+            - pygame.HIDDEN        window is opened in hidden mode
+
+            icon : pygame.Surface
+                The window's icon.
+
+            size : numpy.typing.ArrayLike
+                The size of the window.
+
             max_fps : int
-                The maximum framerate to hold the window around approximately.
+                The window's maximum framerate.
         """
         super().__init__(title, icon, size, flags)
 
-        self._clock = Clock()
-        self.eventmanager = EventManager()
-        self.renderer = Renderer()
+        self._clock = pg.time.Clock()
+        self.eventmanager = EventManager(self)
+        self.renderer = Renderer(self, self.eventmanager)
 
         self.dt = 0.0
         self.fps = 0
@@ -70,16 +108,17 @@ class WindowExtended(Window):
         self.running = False
 
         @event_handler(type=pg.QUIT)
-        def on_quit(window):
-            window.running = False
+        def on_quit(w: WindowExtended):
+            w.running = False
 
-        self.eventmanager.add_handler(on_quit, window=self)
+        self.eventmanager.add_handler(on_quit, w=self)
 
     def run(self):
         """
         Run the main loop.
         """
         self.running = True
+
         while self.running:
             self.dt = self._clock.get_time() / 1000  # in seconds
             self.fps = round(self._clock.get_fps())  # in whole numbers.
